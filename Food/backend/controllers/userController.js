@@ -34,6 +34,32 @@ const loginUser = async (req, res) => {
     }
 }
 
+// Admin Login
+const loginAdmin = async (req, res) => {
+    const {email,password} = req.body;
+    try {
+        const user = await userModel.findOne({email:email, admin:true});
+
+        if(!user){
+            return res.json({success: false, message: "Invalid Credentials"})
+        }
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        
+        if(!isMatch){
+            return res.json({success: false, message: "Invalid Credentials"})
+        }
+
+        const token = createToken(user._id);
+        
+        res.json({success: true, token})
+
+    } catch (error) {
+        console.log(error);
+        res.json({success:false, message: "Error"})
+    }
+}
+
 // Register User
 const registerUser = async (req, res) => {
     const {name, password, email} = req.body;
@@ -77,4 +103,4 @@ const registerUser = async (req, res) => {
     }
 }
 
-export {loginUser, registerUser}
+export {loginUser, registerUser, loginAdmin}

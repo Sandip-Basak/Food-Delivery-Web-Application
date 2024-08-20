@@ -87,8 +87,14 @@ const userOrders = async (req, res) => {
 // All orders list for admin
 const listOrders = async (req, res) => {
     try {
-        const orders = await orderModel.find({});
-        res.json({success:true, data:orders})
+        const user = await userModel.findOne({_id: req.body.userId, admin: true})
+        if(user){
+            const orders = await orderModel.find({});
+            res.json({success:true, data:orders})
+        }
+        else{
+            res.json({success:false, message: "Authorization Failed"})
+        }
     } catch (error) {
         console.log(error);
         res.json({success:false, message: "Something went wrong"});
@@ -98,8 +104,14 @@ const listOrders = async (req, res) => {
 // Order status update
 const updateStatus = async (req, res) => {
     try {
-        await orderModel.findByIdAndUpdate(req.body.orderId, {status: req.body.status})
-        res.json({success: true, message: "Status Updated"})
+        const user = await userModel.findOne({_id: req.body.userId, admin: true})
+        if(user){
+            await orderModel.findByIdAndUpdate(req.body.orderId, {status: req.body.status})
+            res.json({success: true, message: "Status Updated"})
+        }
+        else{
+            res.json({success:false, message: "Authorization Failed"})
+        }
     } catch (error) {
         console.log(error);
         res.json({success: false, message: "Something went wrong"})

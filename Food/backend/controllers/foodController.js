@@ -1,25 +1,37 @@
 import foodModel from "../models/foodModel.js";
 import fs from 'fs';
+import userModel from "../models/userModel.js";
+import jwt from 'jsonwebtoken'
 
 
 // Add Food Item
 const addFood = async (req, res) => {
-    let image_filename = `${req.file.filename}`;
-
-    const food = new foodModel({
-        name: req.body.name,
-        description: req.body.description,
-        price: req.body.price,
-        category: req.body.category,
-        image: image_filename
-    })
-
     try {
-        food.save()
-        res.json({
-            success: true,
-            message: "Food Added"
-        })
+        const { token } = req.headers;
+        const token_decode = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await userModel.findOne({_id: token_decode.id, admin: true})
+
+        if(user){
+            let image_filename = `${req.file.filename}`;
+    
+            const food = new foodModel({
+                name: req.body.name,
+                description: req.body.description,
+                price: req.body.price,
+                category: req.body.category,
+                image: image_filename
+            })
+    
+            food.save()
+            res.json({
+                success: true,
+                message: "Food Added"
+            })
+        }
+        else{
+            res.json({ success: false, message: "Authorization Failed" })
+        }
+
     } catch (error) {
         console.log(error)
         res.json({
@@ -48,15 +60,19 @@ const listFood = async (req, res) => {
 const removeFood = async (req, res) => {
 
     try {
-        const food = await foodModel.findById(req.body.id);
-        console.log(food)
-        fs.unlink(`uploads/${food.image}`, () => { })
-        await foodModel.findByIdAndDelete(req.body.id);
-
-        res.json({
-            success: true,
-            message: "Food Deleted"
-        })
+        const user = await userModel.findOne({ _id: req.body.userId, admin: true })
+        if (user) {
+            const food = await foodModel.findById(req.body.id);
+            fs.unlink(`uploads/${food.image}`, () => { })
+            await foodModel.findByIdAndDelete(req.body.id);
+            res.json({
+                success: true,
+                message: "Food Deleted"
+            })
+        }
+        else {
+            res.json({ success: false, message: "Authorization Failed" })
+        }
     } catch (error) {
         console.log(error)
         res.json({
