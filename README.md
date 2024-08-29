@@ -57,5 +57,3 @@ Tomato is a robust and user-friendly food delivery web application developed usi
 <img width=100% src="https://github.com/Sandip-Basak/Tomato/blob/main/readme_images/Screenshot%202024-08-29%20114919.jpg?raw=true" alt="App Images">
 </div>
 <br>
-
-##
